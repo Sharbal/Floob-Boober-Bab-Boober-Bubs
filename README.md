@@ -1,6 +1,10 @@
 # Floob-Boober-Bab-Boober-Bubs
 Demo for D using Allegro
 
+## git gunk
+We'll start with some notes on using git.  Once this is all settled,
+we can remove these gits notes from the README and put into out wiki.
+
 For windows, maybe these will help and you won't need to use command
 line git.
 
@@ -97,3 +101,39 @@ $ git add README.md
 $ git commit -m "Add git examples to README.md"
 ```
 
+It is time to push the changes back to github so are shared with
+everybody else.  Notice first that `git status` tells us we have
+interesting commits that are not on github yet:
+
+```
+$ git status
+On branch master
+Your branch is ahead of 'origin/master' by 2 commits.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working directory clean
+```
+
+It says we are ahead of `origin/master` by 2 commits.  Those two
+commits are out changes.
+
+Let's push them:
+
+```
+$ git push
+
+Counting objects: 8, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (6/6), 3.28 KiB | 0 bytes/s, done.
+Total 6 (delta 0), reused 0 (delta 0)
+To git@github.com:Sharbal/Floob-Boober-Bab-Boober-Bubs.git
+   e499a1a..74cc675  master -> master
+```
+
+If you go to [github](https://github.com/Sharbal/Floob-Boober-Bab-Boober-Bubs),
+you should see the latest changes.
+
+I just made another change because I could not type this README and have real
+examples of git using this README.  Like writing a book about writing
+a book about writing a book...

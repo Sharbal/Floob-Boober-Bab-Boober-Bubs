@@ -2,6 +2,7 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
+#include <sstream>
 
 int main(int argc, char **argv){
 	
@@ -23,20 +24,49 @@ int main(int argc, char **argv){
 	ALLEGRO_BITMAP* pencil = al_load_bitmap("img/pencil.png");
 	ALLEGRO_FONT* verdana = al_load_ttf_font("fnt/verdana.ttf", 12, 0);
 	
-	//Prepare to receive exit event
 	ALLEGRO_EVENT_QUEUE* eq = al_create_event_queue();
-	al_register_event_source(eq, al_get_display_event_source(display));
 	ALLEGRO_EVENT event;
+
+	//Prepare to receive exit events
+	al_register_event_source(eq, al_get_display_event_source(display));
 	bool exit = false;
+
+	//Prepare to receive mouse events
+	al_install_mouse();
+	al_register_event_source(eq, al_get_mouse_event_source());
+	int mx = 0, my = 0;
+	char* msg = "Whee!";
+
+	//Prepare to receive joystick events
+	al_install_joystick();
+	al_register_event_source(eq, al_get_joystick_event_source());
+	std::stringstream jstr;
 
 	while (!exit){
 		al_clear_to_color(black);
 		al_draw_bitmap(ink, 0, 0, 0);
 		al_draw_scaled_bitmap(pencil, 0, 0, 3124, 2248, 100, 100, 400, 250, 0);
-		al_draw_text(verdana, red, 200, 20, 0, "Hello, World!");
+		al_draw_text(verdana, red, mx + 15, my, 0, msg);
+		al_draw_text(verdana, red, 0, 0, 0, jstr.str().c_str());
 		al_flip_display();
+
 		al_wait_for_event(eq, &event);
-		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
+		if (event.type == ALLEGRO_EVENT_JOYSTICK_AXIS){
+			jstr.clear();
+			jstr << event.joystick.pos;
+		}
+		else if (event.type == ALLEGRO_EVENT_MOUSE_AXES ||
+			event.type == ALLEGRO_EVENT_MOUSE_ENTER_DISPLAY){
+			mx = event.mouse.x;
+			my = event.mouse.y;
+		}
+		else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN){
+			msg = "Boop!";
+		}
+		else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP){
+			msg = "Whee!";
+		}
+		else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
 			exit = true;
 		}
 	}

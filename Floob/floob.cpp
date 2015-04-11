@@ -56,6 +56,7 @@ int main(int argc, char **argv){
 		al_wait_for_event(eq, &event);
 		if (event.type == ALLEGRO_EVENT_JOYSTICK_AXIS){
 			jstr.clear();
+			jstr.str(std::string());
 			jstr << event.joystick.pos;
 		}
 		else if (event.type == ALLEGRO_EVENT_MOUSE_AXES ||

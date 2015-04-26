@@ -34,6 +34,7 @@ int main(int argc, char** argv){
 	
 	ALLEGRO_EVENT_QUEUE* eq = al_create_event_queue();
 	ALLEGRO_EVENT event;
+	const float WAIT_TIME = 0.001f; //1 millisecond
 	al_register_event_source(eq, al_get_display_event_source(display));
 	bool exit = false;
 	al_install_mouse();
@@ -66,6 +67,7 @@ int main(int argc, char** argv){
 	float progress = 0; //0-1
 	const float BAR_H = 5;
 	ALLEGRO_COLOR bar_color = green; //red when error = true
+	const float DEPLETE = 0.001; //per WAIT_TIME
 	
 	bool error, winner;
 	
@@ -98,7 +100,7 @@ int main(int argc, char** argv){
 	generateProblem(a, b, c, problem, px, py, SCREEN_W, circle[0].y - r, myriad_bold);
 	generateAns(ans, NUM_ANS, c);
 
-	int mx, my, mdist;
+	int mx, my, mdist; //mouse location
 	while (!exit){
 		al_clear_to_color(cream);
 		al_draw_filled_rectangle(0, 0, SCREEN_W * progress, BAR_H, bar_color);
@@ -114,40 +116,46 @@ int main(int argc, char** argv){
 			al_draw_text(myriad, white, ax, ay, 0, ansstr.str().c_str());
 		}
 		al_flip_display();
-		al_wait_for_event(eq, &event);
 		//TODO: use below if system supports touch
 		/*if (event.type == ALLEGRO_EVENT_TOUCH_BEGIN){
 			int x = event.touch.x, y = event.touch.y;
 			//algorithm to decide which circle is clicked
 			//precalculate values? TODO..
 		}*/
-		if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN){
-			if (!error && !winner){
-				mx = event.mouse.x;
-				my = event.mouse.y;
-				//std::cout << "X: " << x << " Y: " << y << std::endl;
-				for (int i = 0; i < NUM_ANS; i++){
-					//check if dist <= radius
-					mdist = std::sqrt(std::pow(circle[i].x - mx, 2) + std::pow(circle[i].y - my, 2));
-					if (mdist <= r){
-						if (ans[i] == c){
-							progress += 0.25; //TODO temp
-							//if (progress >= 1), else:
-							generateProblem(a, b, c, problem, px, py, SCREEN_W, circle[0].y - r, myriad_bold);
-							generateAns(ans, NUM_ANS, c);
-						}
-						else{
-							error = true;
-							bar_color = red;
+		if (al_wait_for_event_timed(eq, &event, WAIT_TIME)){
+			if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN){
+				if (!(error || winner)){
+					mx = event.mouse.x;
+					my = event.mouse.y;
+					//std::cout << "X: " << x << " Y: " << y << std::endl;
+					for (int i = 0; i < NUM_ANS; i++){
+						//check if dist <= radius
+						mdist = std::sqrt(std::pow(circle[i].x - mx, 2) + std::pow(circle[i].y - my, 2));
+						if (mdist <= r){
+							if (ans[i] == c){
+								progress += 0.25; //TODO temp
+								if (progress >= 1){
+									winner = true;
+								}
+								else{
+									generateProblem(a, b, c, problem, px, py, SCREEN_W, circle[0].y - r, myriad_bold);
+									generateAns(ans, NUM_ANS, c);
+								}
+							}
+							else{
+								error = true;
+								bar_color = red;
+							}
 						}
 					}
 				}
+				//else click problem to reset() -> make bar green, progress = 0, etc
 			}
-			//else click problem to reset() -> make bar green, progress = 0, etc
+			else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
+				exit = true;
+			}
 		}
-		else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
-			exit = true;
-		}
+		if (!(error || winner) && progress > 0) progress -= DEPLETE;
 	}
 
 	al_destroy_event_queue(eq);

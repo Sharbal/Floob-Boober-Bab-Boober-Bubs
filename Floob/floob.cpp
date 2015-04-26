@@ -69,8 +69,6 @@ int main(int argc, char** argv){
 	ALLEGRO_COLOR bar_color = green; //red when error = true
 	const float DEPLETE = 0.001; //per WAIT_TIME
 	
-	bool error, winner;
-	
 	float r = 30; //circle radius
 	Point circle[DIM * DIM]; //circle locations
 	ALLEGRO_COLOR color[DIM * DIM] = {red, orange, yellow, pink, purple, indigo, lime, green, blue}; //circle colors
@@ -87,6 +85,14 @@ int main(int argc, char** argv){
 		}
 		cy += 2 * r + buf;
 	}
+
+	bool error = false, winner = false;
+	const char* ERROR_MSG = "ERROR";
+	const char* WINNER_MSG = "WINNER";
+	float ex, ey, wx, wy; //winner & error message locations
+	ey = wy = (circle[0].y - r) / 2 - al_get_font_ascent(myriad_bold) / 2;
+	ex = SCREEN_W / 2 - al_get_text_width(myriad_bold, ERROR_MSG) / 2;
+	wx = SCREEN_W / 2 - al_get_text_width(myriad_bold, WINNER_MSG) / 2;
 	
 	//TODO: temp addition only
 	int a, b, c;
@@ -107,13 +113,17 @@ int main(int argc, char** argv){
 		for (int i = 0; i < NUM_ANS; i++){
 			al_draw_filled_circle(circle[i].x, circle[i].y, r, color[i]);
 		}
-		al_draw_text(myriad_bold, black, px, py, 0, problem.str().c_str());
-		for (int i = 0; i < NUM_ANS; i++){
-			ansstr.str("");
-			ansstr << ans[i];
-			ay = circle[i].y - al_get_font_ascent(myriad) / 2;
-			ax = circle[i].x - al_get_text_width(myriad, ansstr.str().c_str()) / 2;
-			al_draw_text(myriad, white, ax, ay, 0, ansstr.str().c_str());
+		if (error) al_draw_text(myriad_bold, red, ex, ey, 0, ERROR_MSG);
+		else if (winner) al_draw_text(myriad_bold, green, wx, wy, 0, WINNER_MSG);
+		else{
+			al_draw_text(myriad_bold, black, px, py, 0, problem.str().c_str());
+			for (int i = 0; i < NUM_ANS; i++){
+				ansstr.str("");
+				ansstr << ans[i];
+				ay = circle[i].y - al_get_font_ascent(myriad) / 2;
+				ax = circle[i].x - al_get_text_width(myriad, ansstr.str().c_str()) / 2;
+				al_draw_text(myriad, white, ax, ay, 0, ansstr.str().c_str());
+			}
 		}
 		al_flip_display();
 		//TODO: use below if system supports touch

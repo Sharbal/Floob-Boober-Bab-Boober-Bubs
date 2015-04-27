@@ -29,6 +29,10 @@ int main(int argc, char** argv){
 	al_change_directory(al_path_cstr(path, '/'));
 	al_destroy_path(path);
 
+	// Enable Antialiasing (1 buffer, 4x MSAA)
+	al_set_new_display_option(ALLEGRO_SAMPLE_BUFFERS, 1, ALLEGRO_SUGGEST);
+	al_set_new_display_option(ALLEGRO_SAMPLES, 4, ALLEGRO_SUGGEST);
+
 	const int SCREEN_W = 320, SCREEN_H = 480, DIM = 3;
 	ALLEGRO_DISPLAY* display = al_create_display(SCREEN_W, SCREEN_H);
 	

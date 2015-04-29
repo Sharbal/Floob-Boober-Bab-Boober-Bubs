@@ -50,7 +50,7 @@ int main(int argc, char** argv){
 	*/
 
 	const float UPDATE_TIME = 0.005f;
-	double lastUpdate = al_get_time(), elapsedTime;
+	double last_update = al_get_time(), elapsed_time;
 	
 	//TODO: make const
 	ALLEGRO_FONT* myriad = al_load_ttf_font("fnt/myriad_pro.OTF", 32, 0);
@@ -162,7 +162,14 @@ int main(int argc, char** argv){
 						}
 					}
 				}
-				//else click problem to reset() -> make bar green, progress = 0, etc
+				else{ //click on problem
+					bar_color = green;
+					progress = 0;
+					winner = error = false;
+					generateProblem(a, b, c, problem, px, py, SCREEN_W, circle[0].y - r, myriad_bold);
+					generateAns(ans, NUM_ANS, c);
+					//etc
+				}
 			}
 			else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
 				exit = true;
@@ -170,9 +177,9 @@ int main(int argc, char** argv){
 		}
 		if (!(error || winner) && progress > 0) progress -= DEPLETE_RATE;
 		
-		elapsedTime = al_get_time() - lastUpdate;
-		if (elapsedTime < UPDATE_TIME) al_rest(UPDATE_TIME - elapsedTime);
-		lastUpdate = al_get_time();
+		elapsed_time = al_get_time() - last_update;
+		if (elapsed_time < UPDATE_TIME) al_rest(UPDATE_TIME - elapsed_time);
+		last_update = al_get_time();
 	}
 
 	al_destroy_event_queue(eq);

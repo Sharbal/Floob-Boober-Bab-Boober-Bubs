@@ -38,7 +38,8 @@ int main(int argc, char** argv){
 	
 	ALLEGRO_EVENT_QUEUE* eq = al_create_event_queue();
 	ALLEGRO_EVENT event;
-	const float WAIT_TIME = 0.001f; //1 millisecond
+	const float WAIT_TIME = 0.005f;
+	double lastUpdate = al_get_time(), elapsedTime;
 	al_register_event_source(eq, al_get_display_event_source(display));
 	bool exit = false;
 	al_install_mouse();
@@ -170,6 +171,10 @@ int main(int argc, char** argv){
 			}
 		}
 		if (!(error || winner) && progress > 0) progress -= DEPLETE;
+		
+		elapsedTime = al_get_time() - lastUpdate;
+		if (elapsedTime < WAIT_TIME) al_rest(WAIT_TIME - elapsedTime);
+		lastUpdate = al_get_time();
 	}
 
 	al_destroy_event_queue(eq);

@@ -38,8 +38,6 @@ int main(int argc, char** argv){
 	
 	ALLEGRO_EVENT_QUEUE* eq = al_create_event_queue();
 	ALLEGRO_EVENT event;
-	const float WAIT_TIME = 0.005f;
-	double lastUpdate = al_get_time(), elapsedTime;
 	al_register_event_source(eq, al_get_display_event_source(display));
 	bool exit = false;
 	al_install_mouse();
@@ -50,6 +48,9 @@ int main(int argc, char** argv){
 	al_set_mouse_emulation_mode(ALLEGRO_MOUSE_EMULATION_TRANSPARENT);
 	al_register_event_source(eq, al_get_touch_input_mouse_emulation_event_source());
 	*/
+
+	const float UPDATE_TIME = 0.005f;
+	double lastUpdate = al_get_time(), elapsedTime;
 	
 	//TODO: make const
 	ALLEGRO_FONT* myriad = al_load_ttf_font("fnt/myriad_pro.OTF", 32, 0);
@@ -71,8 +72,8 @@ int main(int argc, char** argv){
 	
 	float progress = 0; //0-1
 	const float BAR_H = 5;
-	ALLEGRO_COLOR bar_color = green; //red when error = true
-	const float DEPLETE = 0.001; //per WAIT_TIME
+	ALLEGRO_COLOR bar_color = green;
+	const float DEPLETE_RATE = 0.0006;
 	
 	float r = 30; //circle radius
 	Point circle[DIM * DIM]; //circle locations
@@ -94,19 +95,19 @@ int main(int argc, char** argv){
 	bool error = false, winner = false;
 	const char* ERROR_MSG = "ERROR";
 	const char* WINNER_MSG = "WINNER";
-	float ex, ey, wx, wy; //winner & error message locations
+	float ex, ey, wx, wy; //message locations
 	ey = wy = (circle[0].y - r) / 2 - al_get_font_ascent(myriad_bold) / 2;
 	ex = SCREEN_W / 2 - al_get_text_width(myriad_bold, ERROR_MSG) / 2;
 	wx = SCREEN_W / 2 - al_get_text_width(myriad_bold, WINNER_MSG) / 2;
 	
-	//TODO: temp addition only
-	int a, b, c;
 	float px, py; //problem location
 	std::stringstream problem;
 	const int NUM_ANS = DIM * DIM;
 	int ans[NUM_ANS];
-	float ax, ay; //answer location(s)
+	float ax, ay; //answer location
 	std::stringstream ansstr;
+
+	int a, b, c;
 	srand(time(0));
 	generateProblem(a, b, c, problem, px, py, SCREEN_W, circle[0].y - r, myriad_bold);
 	generateAns(ans, NUM_ANS, c);
@@ -131,24 +132,21 @@ int main(int argc, char** argv){
 			}
 		}
 		al_flip_display();
-		//TODO: use below if system supports touch
-		/*if (event.type == ALLEGRO_EVENT_TOUCH_BEGIN){
-			int x = event.touch.x, y = event.touch.y;
-			//algorithm to decide which circle is clicked
-			//precalculate values? TODO..
-		}*/
-		if (al_wait_for_event_timed(eq, &event, WAIT_TIME)){
+		if (al_wait_for_event_timed(eq, &event, UPDATE_TIME)){
+			//TODO: use below if system supports touch
+			/*if (event.type == ALLEGRO_EVENT_TOUCH_BEGIN){
+				int x = event.touch.x, y = event.touch.y;
+				//guts
+			}*/
 			if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN){
 				if (!(error || winner)){
 					mx = event.mouse.x;
 					my = event.mouse.y;
-					//std::cout << "X: " << x << " Y: " << y << std::endl;
 					for (int i = 0; i < NUM_ANS; i++){
-						//check if dist <= radius
 						mdist = std::sqrt(std::pow(circle[i].x - mx, 2) + std::pow(circle[i].y - my, 2));
 						if (mdist <= r){
 							if (ans[i] == c){
-								progress += 0.25; //TODO temp
+								progress += 0.25;
 								if (progress >= 1){
 									winner = true;
 								}
@@ -170,10 +168,10 @@ int main(int argc, char** argv){
 				exit = true;
 			}
 		}
-		if (!(error || winner) && progress > 0) progress -= DEPLETE;
+		if (!(error || winner) && progress > 0) progress -= DEPLETE_RATE;
 		
 		elapsedTime = al_get_time() - lastUpdate;
-		if (elapsedTime < WAIT_TIME) al_rest(WAIT_TIME - elapsedTime);
+		if (elapsedTime < UPDATE_TIME) al_rest(UPDATE_TIME - elapsedTime);
 		lastUpdate = al_get_time();
 	}
 

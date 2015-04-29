@@ -13,8 +13,11 @@ struct Point{
 	float x, y;
 };
 
-void generateAns(int[], const int, int);
-void generateProblem(int&, int&, int&, std::stringstream&, float&, float&, int, int, ALLEGRO_FONT*);
+void genAddProb(int&, int&, int&, std::stringstream&, float&, float&, int, int, ALLEGRO_FONT*);
+void genAddAns(int[], const int, int);
+
+void genSubProb(int&, int&, int&, std::stringstream&, float&, float&, int, int, ALLEGRO_FONT*);
+void genSubAns(int[], const int, int);
 
 int main(int argc, char** argv){
 	
@@ -75,6 +78,9 @@ int main(int argc, char** argv){
 	ALLEGRO_COLOR bar_color = green;
 	const float DEPLETE_RATE = 0.0006;
 	
+	int level = 0;
+	const int MAX_LEVEL = 1;
+	
 	float r = 30; //circle radius
 	Point circle[DIM * DIM]; //circle locations
 	ALLEGRO_COLOR color[DIM * DIM] = {red, orange, yellow, pink, purple, indigo, lime, green, blue}; //circle colors
@@ -109,8 +115,8 @@ int main(int argc, char** argv){
 
 	int a, b, c;
 	srand(time(0));
-	generateProblem(a, b, c, problem, px, py, SCREEN_W, circle[0].y - r, myriad_bold);
-	generateAns(ans, NUM_ANS, c);
+	genAddProb(a, b, c, problem, px, py, SCREEN_W, circle[0].y - r, myriad_bold);
+	genAddAns(ans, NUM_ANS, c);
 
 	int mx, my, mdist; //mouse location
 	while (!exit){
@@ -148,12 +154,23 @@ int main(int argc, char** argv){
 							if (ans[i] == c){
 								progress += 0.25;
 								if (progress >= 1){
-									winner = true;
+									if (level == MAX_LEVEL) winner = true;
+									else{
+										++level;
+										progress = 0;
+									}
 								}
-								else{
-									generateProblem(a, b, c, problem, px, py, SCREEN_W, circle[0].y - r, myriad_bold);
-									generateAns(ans, NUM_ANS, c);
+								switch (level){
+								case 0:
+									genAddProb(a, b, c, problem, px, py, SCREEN_W, circle[0].y - r, myriad_bold);
+									genAddAns(ans, NUM_ANS, c);
+									break;
+								case 1:
+									genSubProb(a, b, c, problem, px, py, SCREEN_W, circle[0].y - r, myriad_bold);
+									genSubAns(ans, NUM_ANS, c);
+									break;
 								}
+								
 							}
 							else{
 								error = true;
@@ -162,13 +179,13 @@ int main(int argc, char** argv){
 						}
 					}
 				}
-				else{ //click on problem
+				else{ //TODO: click on problem?
 					bar_color = green;
 					progress = 0;
 					winner = error = false;
-					generateProblem(a, b, c, problem, px, py, SCREEN_W, circle[0].y - r, myriad_bold);
-					generateAns(ans, NUM_ANS, c);
-					//etc
+					level = 0;
+					genAddProb(a, b, c, problem, px, py, SCREEN_W, circle[0].y - r, myriad_bold);
+					genAddAns(ans, NUM_ANS, c);
 				}
 			}
 			else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
@@ -189,7 +206,7 @@ int main(int argc, char** argv){
 	return 0;
 }
 
-void generateProblem(int& a, int& b, int& c, std::stringstream& problem, float& px, float& py, int width, int height, ALLEGRO_FONT* font){
+void genAddProb(int& a, int& b, int& c, std::stringstream& problem, float& px, float& py, int width, int height, ALLEGRO_FONT* font){
 	a = rand()%10;
 	b = rand()%10;
 	c = a + b;
@@ -199,7 +216,24 @@ void generateProblem(int& a, int& b, int& c, std::stringstream& problem, float& 
 	py = height / 2 - al_get_font_ascent(font) / 2;
 }
 
-void generateAns(int ans[], const int size, int correct_ans){
+void genAddAns(int ans[], const int size, int correct_ans){
+	for (int i = 0; i < size; i++){
+		ans[i] = correct_ans - size / 2 + i;
+	}
+	std::random_shuffle(&ans[0], &ans[size-1]);
+}
+
+void genSubProb(int& a, int& b, int& c, std::stringstream& problem, float& px, float& py, int width, int height, ALLEGRO_FONT* font){
+	a = rand()%10;
+	b = rand()%10;
+	c = a - b;
+	problem.str("");
+	problem << a << " - " << b;
+	px = width / 2 - al_get_text_width(font, problem.str().c_str()) / 2;
+	py = height / 2 - al_get_font_ascent(font) / 2;
+}
+
+void genSubAns(int ans[], const int size, int correct_ans){ //No difference between genAddAns
 	for (int i = 0; i < size; i++){
 		ans[i] = correct_ans - size / 2 + i;
 	}
